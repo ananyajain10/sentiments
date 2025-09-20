@@ -6,15 +6,11 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import praw, os, logging
 from datetime import datetime
 
-
-# Load env vars
 load_dotenv()
 
-# Validate credentials
 if not all([os.getenv("REDDIT_CLIENT_ID"), os.getenv("REDDIT_CLIENT_SECRET"), os.getenv("REDDIT_USER_AGENT")]):
     raise RuntimeError("Missing Reddit API credentials. Check your .env file.")
 
-# Init Reddit + FastAPI + Analyzer
 reddit = praw.Reddit(
     client_id=os.getenv("REDDIT_CLIENT_ID"),
     client_secret=os.getenv("REDDIT_CLIENT_SECRET"),
@@ -29,13 +25,10 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
-
-# Input schema
 class InputData(BaseModel):
     text: Optional[str] = None
     url: Optional[str] = None
 
-# Sentiment helper
 def get_sentiment(text: str):
     scores = analyzer.polarity_scores(text)
     compound = scores['compound']
@@ -47,12 +40,10 @@ def get_sentiment(text: str):
         label = "neutral"
     return label, round(abs(compound), 3)
 
-# Fetch Reddit text
 def fetch_reddit_text(url: str):
     submission = reddit.submission(url=url)
     return (submission.title or "") + "\n" + (submission.selftext or "")
 
-# Main endpoint
 @app.post("/analyze")
 async def analyze(inputs: List[InputData]):
     results = []
@@ -61,7 +52,6 @@ async def analyze(inputs: List[InputData]):
             results.append({"error": "Provide either text or url"})
             continue
 
-        # If both text and url are given, process both separately
         if item.text:
             label, confidence = get_sentiment(item.text)
             results.append({
@@ -88,7 +78,3 @@ async def analyze(inputs: List[InputData]):
                 results.append({"error": f"Failed to fetch Reddit content: {str(e)}"})
 
     return {"results": results}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000)
