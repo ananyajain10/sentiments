@@ -1,10 +1,9 @@
 from typing import List, Optional
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import praw, os, logging
-from datetime import datetime
 
 load_dotenv()
 
