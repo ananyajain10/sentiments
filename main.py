@@ -88,3 +88,7 @@ async def analyze(inputs: List[InputData]):
                 results.append({"error": f"Failed to fetch Reddit content: {str(e)}"})
 
     return {"results": results}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000)
